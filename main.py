@@ -11,6 +11,14 @@ class ConnectorDB():
     def change_win(cls,window, color):
         root = Tk()
         application = ConnectorDB(root, window, color)
+        if window=='Customers':
+            root.geometry("990x667")
+        elif window=='Brands':
+            root.geometry("990x590")
+        elif window=='Categories':
+            root.geometry("1013x590")
+        elif window=='Subcategories':
+            root.geometry("1040x590")
         root.mainloop()
 
     def __init__(self,root, window, color):
@@ -20,7 +28,7 @@ class ConnectorDB():
         self.color = color
         titlespace = ""
         self.root.title("Electronic Store Database")
-        self.root.geometry("1000x700+300+300")
+        self.root.geometry("990x667")
         self.root.resizable(width=False, height=False)
         MainFrame = Frame(self.root, bd=10, width=1300, height=700, relief=RIDGE, bg=self.color)
         MainFrame.grid()
@@ -64,7 +72,7 @@ class ConnectorDB():
 
         SubcategoryID=StringVar()
         SubcategoryName=StringVar()
-
+        Category=StringVar()
 
         #=================================================================================================
         def seq(window, color):
@@ -88,14 +96,14 @@ class ConnectorDB():
             elif self.window=='Subcategories':
                 self.entSubcategoryID.delete(0, END)
                 self.entSubcategoryName.delete(0, END)
-                self.entCategoryID.delete(0, END)
+                Category.set("")
 
         def addData():
             if self.window == 'Customers':
                 if CustomerID.get() =="" or FirstName.get()=="" or Surname.get()=="":
                     tkinter.messagebox.showerror("MySQL Conntector", "Enter Correct Details")
                 else:
-                    sqlCon = pymysql.connect(host="localhost", user="root", password="50660783", database='electronic_store')
+                    sqlCon = pymysql.connect(host="localhost", user="root", password="rooter", database='electronic_store')
                     cur = sqlCon.cursor()
                     cur.execute("insert into Customers values(%s,%s,%s,%s,%s,%s)",(
 
@@ -107,6 +115,7 @@ class ConnectorDB():
                     Mobile.get(),
                     ))
                     sqlCon.commit()
+                    functions.DisplayData(window, self.data_records)
                     sqlCon.close()
                     tkinter.messagebox.showinfo("MySQL Connector", "Record Entered Successfully")
 
@@ -114,7 +123,7 @@ class ConnectorDB():
                 if BrandID.get() =="" or BrandName.get()=="":
                     tkinter.messagebox.showerror("MySQL Conntector", "Enter Correct Details")
                 else:
-                    sqlCon = pymysql.connect(host="localhost", user="root", password="50660783",
+                    sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
                                              database='electronic_store')
                     cur = sqlCon.cursor()
                     cur.execute("insert into Brands values(%s,%s)", (
@@ -123,6 +132,7 @@ class ConnectorDB():
                         BrandName.get(),
                     ))
                     sqlCon.commit()
+                    functions.DisplayData(window, self.data_records)
                     sqlCon.close()
                     tkinter.messagebox.showinfo("MySQL Connector", "Record Entered Successfully")
 
@@ -130,7 +140,7 @@ class ConnectorDB():
                 if CategoryID.get() =="" or CategoryName.get()=="":
                     tkinter.messagebox.showerror("MySQL Conntector", "Enter Correct Details")
                 else:
-                    sqlCon = pymysql.connect(host="localhost", user="root", password="50660783",
+                    sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
                                              database='electronic_store')
                     cur = sqlCon.cursor()
                     cur.execute("insert into Categories values(%s,%s)", (
@@ -139,6 +149,7 @@ class ConnectorDB():
                         CategoryName.get(),
                     ))
                     sqlCon.commit()
+                    functions.DisplayData(window, self.data_records)
                     sqlCon.close()
                     tkinter.messagebox.showinfo("MySQL Connector", "Record Entered Successfully")
 
@@ -146,17 +157,60 @@ class ConnectorDB():
                 if SubcategoryID.get() =="" or SubcategoryName.get()=="":
                     tkinter.messagebox.showerror("MySQL Conntector", "Enter Correct Details")
                 else:
-                    sqlCon = pymysql.connect(host="localhost", user="root", password="50660783",
+                    sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
                                              database='electronic_store')
                     cur = sqlCon.cursor()
-                    cur.execute("insert into Subcategories values(%s,%s, %s)", (
+                    cur.execute("insert into Subcategories(SubcategoryID, SubcategoryName, CategoryID) select %s, %s, CategoryID from Categories where CategoryName=%s limit 1", (
                         SubcategoryID.get(),
                         SubcategoryName.get(),
-                        CategoryID.get(),
+                        Category.get(),
                     ))
                     sqlCon.commit()
+                    functions.DisplayData(window, self.data_records)
                     sqlCon.close()
                     tkinter.messagebox.showinfo("MySQL Connector", "Record Entered Successfully")
+        def Delete():
+            sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
+                                     database='electronic_store')
+            cur = sqlCon.cursor()
+            if self.window == 'Customers':
+                sqlCon = pymysql.connect(host="localhost", user="root", password="rooter", database='electronic_store')
+                cur = sqlCon.cursor()
+                cur.execute("delete from Customers where CustomerID=%s",CustomerID.get())
+                sqlCon.commit()
+                functions.DisplayData(window, self.data_records)
+                sqlCon.close()
+                tkinter.messagebox.showinfo("MySQL Connector", "Record Delete Successfully")
+
+            elif self.window == 'Brands':
+                sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
+                                         database='electronic_store')
+                cur = sqlCon.cursor()
+                cur.execute("delete from Brands where BrandID=%s",BrandID.get())
+                sqlCon.commit()
+                functions.DisplayData(window, self.data_records)
+                sqlCon.close()
+                tkinter.messagebox.showinfo("MySQL Connector", "Record Delete Successfully")
+
+            elif self.window == 'Categories':
+                sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
+                                         database='electronic_store')
+                cur = sqlCon.cursor()
+                cur.execute("delete from Categories where CategoryID=%s",CategoryID.get())
+                sqlCon.commit()
+                functions.DisplayData(window, self.data_records)
+                sqlCon.close()
+                tkinter.messagebox.showinfo("MySQL Connector", "Record Delete Successfully")
+
+            elif self.window == 'Subcategories':
+                sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
+                                         database='electronic_store')
+                cur = sqlCon.cursor()
+                cur.execute("delete from Subcategories where SubcategoryID=%s",SubcategoryID.get())
+                sqlCon.commit()
+                functions.DisplayData(window, self.data_records)
+                sqlCon.close()
+                tkinter.messagebox.showinfo("MySQL Connector", "Record Delete Successfully")
 
 
         def Info(ev):
@@ -179,19 +233,13 @@ class ConnectorDB():
                 CategoryID.set(row[0]),
                 CategoryName.set(row[1]),
 
-            elif self.window == 'Categories':
+            elif self.window == 'Subcategories':
                 SubcategoryID.set(row[0]),
                 SubcategoryName.set(row[1]),
                 CategoryID.set(row[2]),
 
-        def probe():
-            sqlCon = pymysql.connect(host="localhost", user="root", password="50660783", database='electronic_store')
-            cur = sqlCon.cursor()
-            cur.execute("select group_concat(CategoryName) as my_col from Categories")
-            list = functions.Separate(cur.fetchall())
-
         def update():
-            sqlCon = pymysql.connect(host="localhost", user="root", password="50660783", database='electronic_store')
+            sqlCon = pymysql.connect(host="localhost", user="root", password="rooter", database='electronic_store')
             cur = sqlCon.cursor()
             if self.window == 'Customers':
                 cur.execute("update Customers set FirstName=%s, Surname=%s, Address=%s, Gender=%s, Mobile=%s where CustomerID=%s",(
@@ -218,12 +266,13 @@ class ConnectorDB():
                     ))
             elif self.window == 'Subcategories':
                 cur.execute(
-                    "update Subcategories set SubcategoryName=%s, CategoryID=%s where SubcategoryID=%s",
+                    "insert into Subcategories(SubcategoryID, SubcategoryName, CategoryID) select %s, %s, CategoryID from Categories where CategoryName=%s limit 1",
                     (
+                        SubcategoryID.get(),
                         SubcategoryName.get(),
-                        CategoryID.get(),
-                        SubcategoryID.get()
+                        Category.get(),
                     ))
+
             sqlCon.commit()
             sqlCon.close()
             tkinter.messagebox.showinfo("MySQL Connector", "Record Updated Successfully")
@@ -304,17 +353,17 @@ class ConnectorDB():
                                       textvariable=SubcategoryName)
             self.entSubcategoryName.grid(row=2, column=1, sticky=W, padx=5)
 
-            self.lblCategoryID = Label(MidFrame1, font=('arial', 12, 'bold'), text="Category", bd=5)
-            self.lblCategoryID.grid(row=3, column=0, sticky=W, padx=5)
-            self.cboCategoryID = ttk.Combobox(MidFrame1, font=('arial', 12, 'bold'), width=43, state='readonly',
-                                          textvariable=Gender)
-            sqlCon = pymysql.connect(host="localhost", user="root", password="50660783", database='electronic_store')
+            self.lblCategory = Label(MidFrame1, font=('arial', 12, 'bold'), text="Category", bd=5)
+            self.lblCategory.grid(row=3, column=0, sticky=W, padx=5)
+            self.cboCategory = ttk.Combobox(MidFrame1, font=('arial', 12, 'bold'), width=43, state='readonly',
+                                          textvariable=Category)
+            sqlCon = pymysql.connect(host="localhost", user="root", password="rooter", database='electronic_store')
             cur = sqlCon.cursor()
             cur.execute("select group_concat(CategoryName) as my_col from Categories")
             category_list = functions.Separate(cur.fetchall())
-            self.cboCategoryID['values'] = category_list
-            self.cboCategoryID.current(0)
-            self.cboCategoryID.grid(row=3, column=1)
+            self.cboCategory['values'] = category_list
+            self.cboCategory.current(0)
+            self.cboCategory.grid(row=3, column=1)
 
 
         #========================================Table Treeview===================================================
@@ -359,9 +408,23 @@ class ConnectorDB():
             self.data_records.column('CategoryID', width=100)
             self.data_records.column('CategoryName', width=100)
 
-        # self.data_records.pack(fill=BOTH, expand=1)
-        # self.data_records.bind("<ButtonRelease-1>", Info)
-        # functions.DisplayData(window, self.data_records)
+        elif self.window=='Subcategories':
+            self.data_records = ttk.Treeview(MidFrame, height=14, columns=(
+            "SubcategoryID", "SubcategoryName", "CategoryID"),xscrollcommand=scroll_y.set)
+            scroll_y.pack(side=RIGHT, fill=Y)
+            self.data_records.heading('SubcategoryID', text='SubcategoryID')
+            self.data_records.heading('SubcategoryName', text='SubcategoryName')
+            self.data_records.heading('CategoryID', text='Category')
+            self.data_records['show'] = 'headings'
+            self.data_records.column('SubcategoryID', width=100)
+            self.data_records.column('SubcategoryName', width=100)
+            self.data_records.column('CategoryID', width=100)
+
+
+
+        self.data_records.pack(fill=BOTH, expand=1)
+        self.data_records.bind("<ButtonRelease-1>", Info)
+        functions.DisplayData(window, self.data_records)
 
         #===============================================================
         # Tabels buttons
@@ -377,7 +440,7 @@ class ConnectorDB():
         self.btnAddNew=Button(RightFrame1a, font=('arial', 16, 'bold'), text="AddNew", bd=4, pady=1, padx=24, width=8, height=2, command=addData).grid(row=0, column=0, padx=1)
         self.btnDisplay=Button(RightFrame1a, font=('arial', 16, 'bold'), text="Display", bd=4, pady=1, padx=24, width=8, height=2, command=partial(functions.DisplayData, window, self.data_records)).grid(row=1, column=0, padx=1)
         self.btnUpdate=Button(RightFrame1a, font=('arial', 16, 'bold'), text="Update", bd=4, pady=1, padx=24, width=8, height=2, command=update).grid(row=2, column=0, padx=1)
-        self.btnDelete=Button(RightFrame1a, font=('arial', 16, 'bold'), text="Delete", bd=4, pady=1, padx=24, width=8, height=2, command=lambda: print(self.window)).grid(row=3, column=0, padx=1)
+        self.btnDelete=Button(RightFrame1a, font=('arial', 16, 'bold'), text="Delete", bd=4, pady=1, padx=24, width=8, height=2, command=Delete).grid(row=3, column=0, padx=1)
         self.btnSearch=Button(RightFrame1a, font=('arial', 16, 'bold'), text="Search", bd=4, pady=1, padx=24, width=8, height=2).grid(row=4, column=0, padx=1)
         self.btnReset=Button(RightFrame1a, font=('arial', 16, 'bold'), text="Reset", bd=4, pady=1, padx=24, width=8, height=2, command=Reset).grid(row=5, column=0, padx=1)
         self.btnExit=Button(RightFrame1a, font=('arial', 16, 'bold'), text="Exit", bd=4, pady=1, padx=24, width=8, height=2, command=partial(functions.iExit, root)).grid(row=6, column=0, padx=1)
@@ -389,5 +452,3 @@ if __name__=='__main__':
     color='DodgerBlue'
     application = ConnectorDB(root, window, color)
     root.mainloop()
-
-
