@@ -19,6 +19,8 @@ class ConnectorDB():
             root.geometry("1013x590")
         elif window=='Subcategories':
             root.geometry("1040x590")
+        elif window=='Orders':
+            root.geometry("999x633")
         root.mainloop()
 
     def __init__(self,root, window, color):
@@ -74,6 +76,12 @@ class ConnectorDB():
         SubcategoryName=StringVar()
         Category=StringVar()
 
+        OrderID=StringVar()
+        Customer=StringVar()
+        OrderStatus=StringVar()
+        OrderDate=StringVar()
+        ShippedDate=StringVar()
+
         #=================================================================================================
         def seq(window, color):
             root.destroy()
@@ -97,6 +105,12 @@ class ConnectorDB():
                 self.entSubcategoryID.delete(0, END)
                 self.entSubcategoryName.delete(0, END)
                 Category.set("")
+            elif self.window=='Orders':
+                self.OrderID.delete(0, END)
+                self.Customer.set("")
+                self.OrderStatus.set("")
+                self.OrderDate.delete(0, END)
+                self.ShippedDate.delete(0, END)
 
         def addData():
             if self.window == 'Customers':
@@ -169,6 +183,28 @@ class ConnectorDB():
                     functions.DisplayData(window, self.data_records)
                     sqlCon.close()
                     tkinter.messagebox.showinfo("MySQL Connector", "Record Entered Successfully")
+
+            elif self.window == "Orders":
+                if OrderID.get() =="" or OrderStatus.get() =="" or OrderDate.get() =="":
+                    tkinter.messagebox.showerror("MySQL Conntector", "Enter Correct Details")
+                else:
+                    sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
+                                             database='electronic_store')
+                    cur = sqlCon.cursor()
+                cur.execute(
+                    "insert into Orders(OrderID, OrderStatus, OrderDate, ShippedDate, CustomerID) select %s, %s, %s, %s, CustomerID from Customers where Surname=%s limit 1",
+                    (
+                        OrderID.get(),
+                        OrderStatus.get(),
+                        OrderDate.get(),
+                        ShippedDate.get(),
+                        Customer.get(),
+                    ))
+                sqlCon.commit()
+                functions.DisplayData(window, self.data_records)
+                sqlCon.close()
+                tkinter.messagebox.showinfo("MySQL Connector", "Record Entered Successfully")
+
         def Delete():
             sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
                                      database='electronic_store')
@@ -212,6 +248,15 @@ class ConnectorDB():
                 sqlCon.close()
                 tkinter.messagebox.showinfo("MySQL Connector", "Record Delete Successfully")
 
+            elif self.window == 'Orders':
+                sqlCon = pymysql.connect(host="localhost", user="root", password="rooter",
+                                         database='electronic_store')
+                cur = sqlCon.cursor()
+                cur.execute("delete from Orders where OrderID=%s", OrderID.get())
+                sqlCon.commit()
+                functions.DisplayData(window, self.data_records)
+                sqlCon.close()
+                tkinter.messagebox.showinfo("MySQL Connector", "Record Delete Successfully")
 
         def Info(ev):
             viewInfo = self.data_records.focus()
@@ -237,6 +282,13 @@ class ConnectorDB():
                 SubcategoryID.set(row[0]),
                 SubcategoryName.set(row[1]),
                 CategoryID.set(row[2]),
+
+            elif self.window == 'Orders':
+                OrderID.set(row[0]),
+                CustomerID.set(row[1]),
+                OrderStatus.set(row[2]),
+                OrderDate.set(row[3]),
+                ShippedDate.set(row[4]),
 
         def update():
             sqlCon = pymysql.connect(host="localhost", user="root", password="rooter", database='electronic_store')
@@ -272,10 +324,22 @@ class ConnectorDB():
                         SubcategoryName.get(),
                         Category.get(),
                     ))
+            elif self.window == 'Orders':
+                cur.execute(
+                    "insert into Orders(OrderID, OrderStatus, OrderDate, ShippedDate, CustomerID) select %s, %s, %s, %s, CustomerID from Customers where Surname=%s limit 1",
+                    (
+                        OrderID.get(),
+                        OrderStatus.get(),
+                        OrderDate.get(),
+                        ShippedDate.get(),
+                        Customer.get(),
+                    )
+                )
 
             sqlCon.commit()
             sqlCon.close()
             tkinter.messagebox.showinfo("MySQL Connector", "Record Updated Successfully")
+            functions.DisplayData(window, self.data_records)
 
         #=================================================================================================
         self.lbltitle=Label(TitleFrame, font=('arial', 40, 'bold'), text="MySQL Electronic Store", bd=7)
@@ -365,6 +429,48 @@ class ConnectorDB():
             self.cboCategory.current(0)
             self.cboCategory.grid(row=3, column=1)
 
+        elif self.window=='Orders':
+            self.lblOrderID = Label(MidFrame1, font=('arial', 12, 'bold'), text="OrderID", bd=7)
+            self.lblOrderID.grid(row=1, column=0, sticky=W, padx=5)
+            self.entOrderID = Entry(MidFrame1, font=('arial', 12, 'bold'), bd=5, width=44, justify='left',
+                                    textvariable=OrderID)
+            self.entOrderID.grid(row=1, column=1, sticky=W, padx=5)
+
+            self.lblCustomer = Label(MidFrame1, font=('arial', 12, 'bold'), text="Customer", bd=7)
+            self.lblCustomer.grid(row=2, column=0, sticky=W, padx=5)
+            self.cboCustomer = ttk.Combobox(MidFrame1, font=('arial', 12, 'bold'), width=43, state='readonly',
+                         textvariable=Customer)
+            sqlCon = pymysql.connect(host="localhost", user="root", password="rooter", database='electronic_store')
+            cur = sqlCon.cursor()
+            cur.execute("select group_concat(Surname) as my_col from Customers")
+            customer_list = functions.Separate(cur.fetchall())
+            self.cboCustomer['values'] = customer_list
+            self.cboCustomer.current(0)
+            self.cboCustomer.grid(row=2, column=1)
+
+            self.lblOrderStatus = Label(MidFrame1, font=('arial', 12, 'bold'), text="OrderStatus", bd=5)
+            self.lblOrderStatus.grid(row=3, column=0, sticky=W, padx=5)
+            self.cboOrderStatus = ttk.Combobox(MidFrame1, font=('arial', 12, 'bold'), width=43, state='readonly',
+                                            textvariable=OrderStatus)
+            sqlCon = pymysql.connect(host="localhost", user="root", password="rooter", database='electronic_store')
+            self.cboOrderStatus['values']= (' ', 'Delivered', 'Confirmed', 'Cancelled', 'Shipped')
+            self.cboOrderStatus.current(0)
+            self.cboOrderStatus.grid(row=3, column=1)
+
+            self.lblOrderDate = Label(MidFrame1, font=('arial', 12, 'bold'), text="OrderDate", bd=7)
+            self.lblOrderDate.grid(row=4, column=0, sticky=W, padx=5)
+            self.entOrderDate = Entry(MidFrame1, font=('arial', 12, 'bold'), bd=5, width=44, justify='left',
+                                            textvariable=OrderDate)
+            self.entOrderDate.grid(row=4, column=1, sticky=W, padx=5)
+
+            self.lblShippedDate = Label(MidFrame1, font=('arial', 12, 'bold'), text="ShippedDate", bd=7)
+            self.lblShippedDate.grid(row=5, column=0, sticky=W, padx=5)
+            self.entShippedDate = Entry(MidFrame1, font=('arial', 12, 'bold'), bd=5, width=44, justify='left',
+                                      textvariable=ShippedDate)
+            self.entShippedDate.grid(row=5, column=1, sticky=W, padx=5)
+
+
+            # TODO: continue...
 
         #========================================Table Treeview===================================================
         scroll_y= Scrollbar(MidFrame, orient=VERTICAL)
@@ -381,9 +487,9 @@ class ConnectorDB():
 
             self.data_records['show']='headings'
 
-            self.data_records.column('CustomerID', width=100)
-            self.data_records.column('FirstName', width=100)
-            self.data_records.column('Surname', width=100)
+            self.data_records.column('CustomerID', width=75)
+            self.data_records.column('FirstName', width=80)
+            self.data_records.column('Surname', width=90)
             self.data_records.column('Address', width=100)
             self.data_records.column('Gender', width=70)
             self.data_records.column('Mobile', width=70)
@@ -420,7 +526,22 @@ class ConnectorDB():
             self.data_records.column('SubcategoryName', width=100)
             self.data_records.column('CategoryID', width=100)
 
+        elif self.window=='Orders':
+            self.data_records = ttk.Treeview(MidFrame, height=14, columns=(
+                "OrderID", "CustomerID", "OrderStatus", "OrderDate", "ShippedDate"), xscrollcommand=scroll_y.set)
+            scroll_y.pack(side=RIGHT, fill=Y)
+            self.data_records.heading('OrderID', text='OrderID')
+            self.data_records.heading('CustomerID', text='CustomerID')
+            self.data_records.heading('OrderStatus', text='OrderStatus')
+            self.data_records.heading('OrderDate', text='OrderDate')
+            self.data_records.heading('ShippedDate', text='ShippedDate')
 
+            self.data_records['show'] = 'headings'
+            self.data_records.column('OrderID',width=100)
+            self.data_records.column('CustomerID', width=100)
+            self.data_records.column('OrderStatus', width=100)
+            self.data_records.column('OrderDate', width=100)
+            self.data_records.column('ShippedDate', width=100)
 
         self.data_records.pack(fill=BOTH, expand=1)
         self.data_records.bind("<ButtonRelease-1>", Info)
@@ -430,7 +551,7 @@ class ConnectorDB():
         # Tabels buttons
         self.btnCustomers = Button(LeftFrame1, font=('arial', 16, 'bold'), text="Customers", bd=4, pady=1, padx=24, width=8,height=2, command=partial(seq, "Customers", 'DodgerBlue')).grid(row=0, column=0, padx=1)
         self.btnProducts = Button(LeftFrame1, font=('arial', 16, 'bold'), text="Products", bd=4, pady=1, padx=24,width=8, height=2).grid(row=1, column=0, padx=1)
-        self.btnOrders = Button(LeftFrame1, font=('arial', 16, 'bold'), text="Orders", bd=4, pady=1, padx=24, width=8,height=2).grid(row=2, column=0, padx=1)
+        self.btnOrders = Button(LeftFrame1, font=('arial', 16, 'bold'), text="Orders", bd=4, pady=1, padx=24, width=8,height=2, command=partial(seq, "Orders", 'OliveDrab1')).grid(row=2, column=0, padx=1)
         self.btnOrderItems = Button(LeftFrame1, font=('arial', 16, 'bold'), text="OrderItems", bd=4, pady=1, padx=24, width=8,height=2).grid(row=3, column=0, padx=1)
         self.btnBrands = Button(LeftFrame1, font=('arial', 16, 'bold'), text="Brands", bd=4, pady=1, padx=24, width=8,height=2, command=partial(seq, "Brands", 'SkyBlue2')).grid(row=4, column=0, padx=1)
         self.btnCategories = Button(LeftFrame1, font=('arial', 16, 'bold'), text="Categories", bd=4, pady=1, padx=24, width=8,height=2, command=partial(seq, "Categories", 'Pale green')).grid(row=5, column=0, padx=1)
