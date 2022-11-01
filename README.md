@@ -1,5 +1,5 @@
 # Electronic Store MySQL
-## Description
+## General info
 
 ## Technologies
 MariaDB, MySQL, Python3.7, Tkinter
